@@ -1,32 +1,28 @@
-// src/components/budgeting/BudgetTable.js
-const BudgetTable = () => {
-    return (
-      <div>
-        <h2>Budget List</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Budget Name</th>
-              <th>Amount</th>
-              <th>Category</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Food</td>
-              <td>$500</td>
-              <td>Food</td>
-            </tr>
-            <tr>
-              <td>Rent</td>
-              <td>$1200</td>
-              <td>Rent</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-  
-  export default BudgetTable;
-  
+const BudgetTable = ({ budgets }) => {
+  if (budgets.length === 0) {
+    return <p className="text-gray-500">No budgets yet. Add one above. 💸</p>;
+  }
+
+  return (
+    <table className="w-full table-auto border-collapse border border-gray-300">
+      <thead>
+        <tr className="bg-gray-200">
+          <th className="p-2 border">Name</th>
+          <th className="p-2 border">Amount ($)</th>
+          <th className="p-2 border">Category</th>
+        </tr>
+      </thead>
+      <tbody>
+        {budgets.map((b, index) => (
+          <tr key={index}>
+            <td className="p-2 border">{b.name}</td>
+            <td className="p-2 border">{b.amount}</td>
+            <td className="p-2 border">{b.category}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+export default BudgetTable;
