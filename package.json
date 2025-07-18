@@ -1,0 +1,28 @@
+{
+  "name": "shopywiz",
+  "version": "1.0.0",
+  "description": "lol",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShopyWiz/demo1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ShopyWiz/demo1/issues"
+  },
+  "homepage": "https://github.com/ShopyWiz/demo1#readme",
+  "dependencies": {
+    "next": "^12.0.0",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
+  }
+}
