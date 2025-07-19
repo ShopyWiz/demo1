@@ -1,0 +1,27 @@
+# === General Node.js ===
+node_modules/
+dist/
+.env
+.env.local
+.DS_Store
+
+# === Logs ===
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === OS-specific ===
+Thumbs.db
+*.swp
+
+# === IDEs ===
+.vscode/
+.idea/
+
+# === Backend-specific ===
+backend/.env
+backend/node_modules/
+
+# === Frontend Next.js ===
+.next/
+out/

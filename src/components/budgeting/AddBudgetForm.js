@@ -1,45 +1,61 @@
 import { useState } from 'react';
 
+const categories = [
+  { value: 'Food', label: '🍔 Food' },
+  { value: 'Rent', label: '🏠 Rent' },
+  { value: 'Utilities', label: '💡 Utilities' },
+  { value: 'Misc', label: '🛒 Misc' },
+];
+
 const AddBudgetForm = ({ onAddBudget }) => {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('Food');
+  const [category, setCategory] = useState(categories[0].value);
+  const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    if (!name.trim()) {
+      setError('Please enter a budget name.');
+      return;
+    }
+    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+      setError('Please enter a valid amount greater than 0.');
+      return;
+    }
+    setError('');
     const newBudget = {
-      name,
+      name: name.trim(),
       amount: parseFloat(amount),
       category,
     };
-
-    onAddBudget(newBudget); // 🔁 Send to parent
-
-    // Clear form
+    onAddBudget(newBudget);
     setName('');
     setAmount('');
-    setCategory('Food');
+    setCategory(categories[0].value);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-gray-100 p-4 rounded-xl shadow-sm">
+    <form onSubmit={handleSubmit} className="space-y-5 bg-indigo-50 p-5 rounded-xl shadow">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-xl">➕</span>
+        <h3 className="text-lg font-bold text-indigo-700">Add a Budget Item</h3>
+      </div>
       {/* Budget Name */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">Budget Name</label>
+        <label className="block text-sm font-medium text-indigo-700 mb-1">Budget Name</label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
           placeholder="e.g. Rent"
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          className="block w-full px-3 py-2 border border-indigo-200 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
-
       {/* Amount */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">Amount ($)</label>
+        <label className="block text-sm font-medium text-indigo-700 mb-1">Amount ($)</label>
         <input
           type="number"
           min="0"
@@ -47,30 +63,29 @@ const AddBudgetForm = ({ onAddBudget }) => {
           onChange={(e) => setAmount(e.target.value)}
           required
           placeholder="e.g. 1000"
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          className="block w-full px-3 py-2 border border-indigo-200 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
-
       {/* Category */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">Category</label>
+        <label className="block text-sm font-medium text-indigo-700 mb-1">Category</label>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+          className="block w-full px-3 py-2 border border-indigo-200 rounded-md shadow-sm"
         >
-          <option value="Food">Food</option>
-          <option value="Rent">Rent</option>
-          <option value="Utilities">Utilities</option>
-          <option value="Misc">Misc</option>
+          {categories.map(cat => (
+            <option key={cat.value} value={cat.value}>{cat.label}</option>
+          ))}
         </select>
       </div>
-
+      {/* Error Message */}
+      {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
       {/* Submit */}
       <div>
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded shadow"
         >
           Add Budget
         </button>
