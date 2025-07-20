@@ -13,8 +13,9 @@ const AddBudgetForm = ({ onAddBudget }) => {
   const [category, setCategory] = useState(categories[0].value);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!name.trim()) {
       setError('Please enter a budget name.');
       return;
@@ -23,16 +24,36 @@ const AddBudgetForm = ({ onAddBudget }) => {
       setError('Please enter a valid amount greater than 0.');
       return;
     }
+
     setError('');
+
     const newBudget = {
       name: name.trim(),
       amount: parseFloat(amount),
       category,
     };
-    onAddBudget(newBudget);
-    setName('');
-    setAmount('');
-    setCategory(categories[0].value);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/budgets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBudget),
+      });
+
+      if (!response.ok) throw new Error('Failed to save budget');
+
+      const saved = await response.json();
+      onAddBudget(saved); // update UI
+      alert('✅ Budget added successfully!');
+
+      // Reset form
+      setName('');
+      setAmount('');
+      setCategory(categories[0].value);
+    } catch (err) {
+      console.error('❌ Error submitting:', err);
+      setError('Something went wrong. Please try again.');
+    }
   };
 
   return (
@@ -41,6 +62,7 @@ const AddBudgetForm = ({ onAddBudget }) => {
         <span className="text-xl">➕</span>
         <h3 className="text-lg font-bold text-indigo-700">Add a Budget Item</h3>
       </div>
+
       {/* Budget Name */}
       <div>
         <label className="block text-sm font-medium text-indigo-700 mb-1">Budget Name</label>
@@ -53,6 +75,7 @@ const AddBudgetForm = ({ onAddBudget }) => {
           className="block w-full px-3 py-2 border border-indigo-200 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
+
       {/* Amount */}
       <div>
         <label className="block text-sm font-medium text-indigo-700 mb-1">Amount ($)</label>
@@ -66,6 +89,7 @@ const AddBudgetForm = ({ onAddBudget }) => {
           className="block w-full px-3 py-2 border border-indigo-200 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
+
       {/* Category */}
       <div>
         <label className="block text-sm font-medium text-indigo-700 mb-1">Category</label>
@@ -79,8 +103,10 @@ const AddBudgetForm = ({ onAddBudget }) => {
           ))}
         </select>
       </div>
+
       {/* Error Message */}
       {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
+
       {/* Submit */}
       <div>
         <button
