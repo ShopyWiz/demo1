@@ -1,5 +1,5 @@
 // controllers/budgetController.js
-const { addBudget, getAllBudgets } = require('../models/BudgetModel');
+const { addBudget, getAllBudgets, deleteBudget, updateBudget } = require('../models/BudgetModel');
 
 // Handle POST /api/budgets
 const createBudget = async (req, res) => {
@@ -29,7 +29,41 @@ const fetchBudgets = async (req, res) => {
   }
 };
 
+
+// Handle DELETE /api/budgets/:id
+const removeBudget = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: 'Budget id required' });
+    const deleted = await deleteBudget(id);
+    if (deleted === 0) return res.status(404).json({ error: 'Budget not found' });
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error deleting budget:', error);
+    res.status(500).json({ error: 'Failed to delete budget' });
+  }
+};
+
+// Handle PUT /api/budgets/:id
+const editBudget = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, amount, category } = req.body;
+    if (!id || !name || !amount || !category) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+    const [updatedBudget] = await updateBudget(id, { name, amount, category });
+    if (!updatedBudget) return res.status(404).json({ error: 'Budget not found' });
+    res.status(200).json(updatedBudget);
+  } catch (error) {
+    console.error('Error updating budget:', error);
+    res.status(500).json({ error: 'Failed to update budget' });
+  }
+};
+
 module.exports = {
   createBudget,
   fetchBudgets,
+  removeBudget,
+  editBudget,
 };

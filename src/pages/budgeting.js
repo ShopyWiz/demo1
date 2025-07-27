@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import AddBudgetForm from '../components/budgeting/AddBudgetForm.js';
 import BudgetCategory from '../components/budgeting/BudgetCategory.js';
 import BudgetTable from '../components/budgeting/BudgetTable.js';
@@ -6,12 +6,85 @@ import SavingsGoal from '../components/budgeting/SavingsGoal.js';
 
 const BudgetingPage = () => {
   const [budgets, setBudgets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [feedback, setFeedback] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
   const [savedGoal, setSavedGoal] = useState(null);
 
-  const handleAddBudget = (newBudget) => {
-    setBudgets((prev) => [...prev, newBudget]);
+
+  // Fetch budgets from backend
+  const fetchBudgets = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch('http://localhost:5000/api/budgets');
+      if (!response.ok) throw new Error('Failed to fetch budgets');
+      const data = await response.json();
+      setBudgets(data);
+    } catch (error) {
+      setError('Could not load budgets.');
+      setBudgets([]);
+    }
+    setLoading(false);
+  };
+
+  // Initial fetch
+  React.useEffect(() => {
+    fetchBudgets();
+  }, []);
+
+  // Add budget handler
+  const handleAddBudget = async (newBudget) => {
+    setFeedback('');
+    setError('');
+    try {
+      const response = await fetch('http://localhost:5000/api/budgets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBudget),
+      });
+      if (!response.ok) throw new Error('Failed to add budget');
+      await fetchBudgets();
+      setFeedback('Budget added!');
+    } catch (error) {
+      setError('Failed to add budget.');
+    }
+  };
+
+  // Delete budget handler
+  const handleDeleteBudget = async (id) => {
+    setFeedback('');
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:5000/api/budgets/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete budget');
+      await fetchBudgets();
+      setFeedback('Budget deleted.');
+    } catch (error) {
+      setError('Failed to delete budget.');
+    }
+  };
+
+  // Edit budget handler
+  const handleEditBudget = async (id, updatedData) => {
+    setFeedback('');
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:5000/api/budgets/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData),
+      });
+      if (!response.ok) throw new Error('Failed to update budget');
+      await fetchBudgets();
+      setFeedback('Budget updated!');
+    } catch (error) {
+      setError('Failed to update budget.');
+    }
   };
 
   // Listen for savings goal from SavingsGoal component
@@ -22,6 +95,12 @@ const BudgetingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-50 py-10 px-2 flex justify-center">
       <div className="w-full max-w-4xl space-y-8">
+        {/* Feedback/Error Toast */}
+        {(feedback || error) && (
+          <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg font-semibold text-center animate-fadeIn ${feedback ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {feedback || error}
+          </div>
+        )}
         {/* Welcome Banner */}
         <div className="bg-gradient-to-r from-blue-200 to-indigo-100 text-indigo-900 text-center p-4 rounded-3xl shadow font-semibold flex items-center justify-center gap-3">
           <span className="text-3xl">👋</span>
@@ -100,9 +179,17 @@ const BudgetingPage = () => {
         <hr className="my-6 border-indigo-200" />
 
         {/* Budget Table Section */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 border border-indigo-100">
+        <div className="bg-white rounded-3xl shadow-lg p-8 border border-indigo-100 min-h-[200px] flex flex-col">
           <h2 className="text-2xl font-bold text-indigo-800 mb-4 tracking-tight">📋 Budget Overview</h2>
-          <BudgetTable budgets={budgets} />
+          {loading ? (
+            <div className="flex items-center gap-2 text-indigo-500 justify-center mt-8"><span className="animate-spin">⏳</span> Loading budgets...</div>
+          ) : (
+            <BudgetTable
+              budgets={budgets}
+              onDelete={handleDeleteBudget}
+              onEdit={handleEditBudget}
+            />
+          )}
         </div>
       </div>
 
@@ -118,8 +205,8 @@ const BudgetingPage = () => {
               ✕
             </button>
             <AddBudgetForm
-              onAddBudget={(budget) => {
-                handleAddBudget(budget);
+              onAddBudget={async (budget) => {
+                await handleAddBudget(budget);
                 setShowForm(false);
               }}
             />

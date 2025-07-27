@@ -27,33 +27,17 @@ const AddBudgetForm = ({ onAddBudget }) => {
 
     setError('');
 
-    const newBudget = {
+    // Only call onAddBudget with the form data; parent handles POST and UI update
+    await onAddBudget({
       name: name.trim(),
       amount: parseFloat(amount),
       category,
-    };
+    });
 
-    try {
-      const response = await fetch('http://localhost:5000/api/budgets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newBudget),
-      });
-
-      if (!response.ok) throw new Error('Failed to save budget');
-
-      const saved = await response.json();
-      onAddBudget(saved); // update UI
-      alert('✅ Budget added successfully!');
-
-      // Reset form
-      setName('');
-      setAmount('');
-      setCategory(categories[0].value);
-    } catch (err) {
-      console.error('❌ Error submitting:', err);
-      setError('Something went wrong. Please try again.');
-    }
+    // Reset form
+    setName('');
+    setAmount('');
+    setCategory(categories[0].value);
   };
 
   return (
