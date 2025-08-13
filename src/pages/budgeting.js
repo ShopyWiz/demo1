@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import AddBudgetForm from '../components/budgeting/AddBudgetForm.js';
 import BudgetCategory from '../components/budgeting/BudgetCategory.js';
 import BudgetTable from '../components/budgeting/BudgetTable.js';
-import SavingsGoal from '../components/budgeting/SavingsGoal.js';
+import SavingsHub from '../components/budgeting/SavingsHub.js';
 
 const BudgetingPage = () => {
   const [budgets, setBudgets] = useState([]);
@@ -11,9 +11,7 @@ const BudgetingPage = () => {
   const [feedback, setFeedback] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
-  const [savedGoal, setSavedGoal] = useState(null);
-  const [savingsData, setSavingsData] = useState({ goal: 0, current_amount: 0 });
-
+  const [enterpriseSavingsData, setEnterpriseSavingsData] = useState({});
 
   // Fetch budgets from backend
   const fetchBudgets = async () => {
@@ -31,24 +29,9 @@ const BudgetingPage = () => {
     setLoading(false);
   };
 
-  // Fetch savings data
-  const fetchSavingsData = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/savings');
-      if (response.ok) {
-        const data = await response.json();
-        setSavingsData(data);
-        setSavedGoal(data.goal);
-      }
-    } catch (error) {
-      console.error('Failed to fetch savings data:', error);
-    }
-  };
-
   // Initial fetch
   React.useEffect(() => {
     fetchBudgets();
-    fetchSavingsData();
   }, []);
 
   // Add budget handler
@@ -103,110 +86,108 @@ const BudgetingPage = () => {
     }
   };
 
-  // Listen for savings goal from SavingsGoal component
-  const handleGoalSave = (goal) => {
-    setSavedGoal(goal);
-    fetchSavingsData(); // Refresh savings data when goal is updated
+  // Handle enterprise savings data updates
+  const handleEnterpriseSavingsUpdate = (data) => {
+    setEnterpriseSavingsData(data);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-50 py-10 px-2 flex justify-center">
-      <div className="w-full max-w-4xl space-y-8">
+      <div className="w-full max-w-6xl space-y-8">
         {/* Feedback/Error Toast */}
         {(feedback || error) && (
           <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg font-semibold text-center animate-fadeIn ${feedback ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
             {feedback || error}
           </div>
         )}
+
         {/* Welcome Banner */}
-        <div className="bg-gradient-to-r from-blue-200 to-indigo-100 text-indigo-900 text-center p-4 rounded-3xl shadow font-semibold flex items-center justify-center gap-3">
-          <span className="text-3xl">👋</span>
-          <span>Welcome to <span className="font-extrabold">ShopyWiz Budget Dashboard</span>!</span>
+        <div className="bg-gradient-to-r from-blue-200 to-indigo-100 text-indigo-900 text-center p-6 rounded-3xl shadow-lg font-semibold flex items-center justify-center gap-3">
+          <span className="text-4xl">👋</span>
+          <span className="text-lg">Welcome to <span className="font-extrabold">ShopyWiz Budget Dashboard</span>!</span>
         </div>
 
         {/* Header & Tips */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-extrabold text-indigo-800 tracking-tight">ShopyWiz Budget Dashboard</h1>
-          <p className="text-indigo-600 text-lg">Plan smarter. Spend better. Save more.</p>
-          <div className="inline-block bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl shadow text-sm mt-2">
-            💡 Tip: Use categories to organize your spending and set a savings goal to stay motivated!
+          <p className="text-indigo-600 text-xl">Plan smarter. Spend better. Save more.</p>
+          <div className="inline-block bg-indigo-50 text-indigo-700 px-6 py-3 rounded-xl shadow text-sm">
+            💡 Tip: Create multiple savings goals and manage your budget categories for complete financial control!
           </div>
         </div>
 
-        {/* Summary Card */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-2">
-          <div className="bg-white rounded-3xl shadow-lg p-7 flex flex-col items-center border border-indigo-100">
-            <div className="text-3xl mb-2">💰</div>
-            <div className="text-lg font-semibold text-indigo-700">Total Budget Items</div>
-            <div className="text-2xl font-extrabold text-blue-700">{budgets.length}</div>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white rounded-3xl shadow-lg p-7 flex flex-col items-center border border-indigo-100 hover:shadow-xl transition-all duration-300">
+            <div className="text-4xl mb-3">💰</div>
+            <div className="text-lg font-semibold text-indigo-700">Budget Items</div>
+            <div className="text-3xl font-extrabold text-blue-700">{budgets.length}</div>
           </div>
-          <div className="bg-white rounded-3xl shadow-lg p-7 flex flex-col items-center border border-indigo-100">
-            <div className="text-3xl mb-2">🐷</div>
-            <div className="text-lg font-semibold text-indigo-700">Savings Progress</div>
-            <div className="text-2xl font-extrabold text-indigo-700">
-              ${savingsData.current_amount ? parseFloat(savingsData.current_amount).toLocaleString() : '0'}
+          <div className="bg-white rounded-3xl shadow-lg p-7 flex flex-col items-center border border-indigo-100 hover:shadow-xl transition-all duration-300">
+            <div className="text-4xl mb-3">🎯</div>
+            <div className="text-lg font-semibold text-indigo-700">Savings Goals</div>
+            <div className="text-3xl font-extrabold text-indigo-700">
+              {enterpriseSavingsData.total_categories || 0}
             </div>
-            {savingsData.goal > 0 && (
-              <div className="text-sm text-gray-500 mt-1">
-                Goal: ${parseFloat(savingsData.goal).toLocaleString()}
-              </div>
-            )}
           </div>
-          <div className="bg-white rounded-3xl shadow-lg p-7 flex flex-col items-center border border-indigo-100">
-            <div className="text-3xl mb-2">📁</div>
-            <div className="text-lg font-semibold text-indigo-700">Categories</div>
-            <button
-              onClick={() => setShowCategories(true)}
-              className="mt-2 bg-indigo-600 text-white px-5 py-2 rounded-xl hover:bg-indigo-700 transition font-semibold"
-              title="Manage your categories"
-            >
-              Manage Categories
-            </button>
+          <div className="bg-white rounded-3xl shadow-lg p-7 flex flex-col items-center border border-indigo-100 hover:shadow-xl transition-all duration-300">
+            <div className="text-4xl mb-3">🏦</div>
+            <div className="text-lg font-semibold text-indigo-700">Total Saved</div>
+            <div className="text-3xl font-extrabold text-green-600">
+              ${enterpriseSavingsData.total_saved ? parseFloat(enterpriseSavingsData.total_saved).toLocaleString() : '0'}
+            </div>
+          </div>
+          <div className="bg-white rounded-3xl shadow-lg p-7 flex flex-col items-center border border-indigo-100 hover:shadow-xl transition-all duration-300">
+            <div className="text-4xl mb-3">📈</div>
+            <div className="text-lg font-semibold text-indigo-700">Avg Progress</div>
+            <div className="text-3xl font-extrabold text-purple-600">
+              {enterpriseSavingsData.avg_progress ? `${parseFloat(enterpriseSavingsData.avg_progress).toFixed(1)}%` : '0%'}
+            </div>
           </div>
         </div>
 
-        {/* Divider */}
-        <hr className="my-6 border-indigo-200" />
-
-        {/* Main Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Add Budget */}
-          <div className="bg-white rounded-2xl shadow-lg flex flex-col items-stretch p-5 border border-indigo-100">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">➕</span>
-              <h2 className="text-xl font-bold text-indigo-800 tracking-tight">Add Budget</h2>
+        {/* Savings Hub Section */}
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-indigo-100">
+          <div className="flex items-center gap-4 mb-8">
+            <span className="text-4xl">🏢</span>
+            <div>
+              <h2 className="text-3xl font-bold text-indigo-800 tracking-tight">Savings Hub</h2>
+              <p className="text-indigo-600 text-lg">Professional multi-goal savings management for business success</p>
             </div>
-            <p className="text-sm text-indigo-500 mb-4">Add a new item to your budget list.</p>
+          </div>
+          <SavingsHub onDataUpdate={handleEnterpriseSavingsUpdate} />
+        </div>
+
+        {/* Action Cards */}
+        <div className="grid grid-cols-1 gap-6">
+          {/* Add Budget Card */}
+          <div className="bg-white rounded-3xl shadow-lg flex flex-col items-stretch p-8 border border-indigo-100 hover:shadow-xl transition-all duration-300 max-w-md mx-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-3xl">➕</span>
+              <h2 className="text-2xl font-bold text-indigo-800 tracking-tight">Add Budget Item</h2>
+            </div>
+            <p className="text-indigo-500 mb-6 text-lg">Track your expenses by adding new budget items.</p>
             <button
               onClick={() => setShowForm(true)}
-              className="bg-blue-600 text-white px-5 py-2 rounded-xl hover:bg-blue-700 transition font-semibold shadow mt-2"
+              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-semibold shadow-lg text-lg"
               title="Add a new budget item"
             >
-              + Add Budget
+              + Add Budget Item
             </button>
-          </div>
-
-          {/* Savings Goal */}
-          <div className="bg-white rounded-2xl shadow-lg flex flex-col items-stretch p-5 border border-indigo-100">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">🐷</span>
-              <h2 className="text-xl font-bold text-indigo-800 tracking-tight">Savings Goal</h2>
-            </div>
-            <p className="text-sm text-indigo-500 mb-4">Set and track your savings goal.</p>
-            <div className="mt-2">
-              <SavingsGoal onGoalSave={handleGoalSave} cardStyle={false} />
-            </div>
           </div>
         </div>
 
-        {/* Divider */}
-        <hr className="my-6 border-indigo-200" />
-
         {/* Budget Table Section */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 border border-indigo-100 min-h-[200px] flex flex-col">
-          <h2 className="text-2xl font-bold text-indigo-800 mb-4 tracking-tight">📋 Budget Overview</h2>
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-indigo-100">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="text-3xl">📋</span>
+            <h2 className="text-3xl font-bold text-indigo-800 tracking-tight">Budget Overview</h2>
+          </div>
           {loading ? (
-            <div className="flex items-center gap-2 text-indigo-500 justify-center mt-8"><span className="animate-spin">⏳</span> Loading budgets...</div>
+            <div className="flex items-center gap-3 text-indigo-500 justify-center py-12">
+              <span className="animate-spin text-2xl">⏳</span> 
+              <span className="text-lg">Loading budgets...</span>
+            </div>
           ) : (
             <BudgetTable
               budgets={budgets}
