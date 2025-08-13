@@ -12,6 +12,7 @@ const BudgetingPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
   const [savedGoal, setSavedGoal] = useState(null);
+  const [savingsData, setSavingsData] = useState({ goal: 0, current_amount: 0 });
 
 
   // Fetch budgets from backend
@@ -30,9 +31,24 @@ const BudgetingPage = () => {
     setLoading(false);
   };
 
+  // Fetch savings data
+  const fetchSavingsData = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/savings');
+      if (response.ok) {
+        const data = await response.json();
+        setSavingsData(data);
+        setSavedGoal(data.goal);
+      }
+    } catch (error) {
+      console.error('Failed to fetch savings data:', error);
+    }
+  };
+
   // Initial fetch
   React.useEffect(() => {
     fetchBudgets();
+    fetchSavingsData();
   }, []);
 
   // Add budget handler
@@ -90,6 +106,7 @@ const BudgetingPage = () => {
   // Listen for savings goal from SavingsGoal component
   const handleGoalSave = (goal) => {
     setSavedGoal(goal);
+    fetchSavingsData(); // Refresh savings data when goal is updated
   };
 
   return (
@@ -125,8 +142,15 @@ const BudgetingPage = () => {
           </div>
           <div className="bg-white rounded-3xl shadow-lg p-7 flex flex-col items-center border border-indigo-100">
             <div className="text-3xl mb-2">🐷</div>
-            <div className="text-lg font-semibold text-indigo-700">Savings Goal</div>
-            <div className="text-2xl font-extrabold text-indigo-700">{savedGoal ? `$${savedGoal.toLocaleString()}` : 'Not set'}</div>
+            <div className="text-lg font-semibold text-indigo-700">Savings Progress</div>
+            <div className="text-2xl font-extrabold text-indigo-700">
+              ${savingsData.current_amount ? parseFloat(savingsData.current_amount).toLocaleString() : '0'}
+            </div>
+            {savingsData.goal > 0 && (
+              <div className="text-sm text-gray-500 mt-1">
+                Goal: ${parseFloat(savingsData.goal).toLocaleString()}
+              </div>
+            )}
           </div>
           <div className="bg-white rounded-3xl shadow-lg p-7 flex flex-col items-center border border-indigo-100">
             <div className="text-3xl mb-2">📁</div>

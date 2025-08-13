@@ -5,6 +5,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const budgetRoutes = require('./routes/budgetRoutes');
+const savingsRoutes = require('./routes/savingsRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -15,6 +16,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api', budgetRoutes);
+app.use('/api', savingsRoutes);
 
 // Root test route
 app.get('/', (req, res) => {
